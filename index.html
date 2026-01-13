@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Infrastructure Market Map | Interactive Visualization</title>
+  <meta name="description" content="Explore the AI Infrastructure ecosystem with this interactive market map featuring live stock data and detailed company information.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+          <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+        </svg>
+        <span class="logo-text">AI Infrastructure Market Map</span>
+      </div>
+      
+      <div class="search-container">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search companies, tickers...">
+        <div id="search-results" class="search-results"></div>
+      </div>
+      
+      <div class="header-actions">
+        <button id="reset-view" class="btn btn-ghost" title="Reset View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+        <button id="expand-all" class="btn btn-ghost" title="Expand All">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8l-6-6-6 6m0 8l6 6 6-6"/>
+          </svg>
+        </button>
+        <button id="collapse-all" class="btn btn-ghost" title="Collapse All">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 15l6-6 6 6m0-6l-6 6-6-6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Visualization Container -->
+  <main class="main-container">
+    <div id="tree-container" class="tree-container">
+      <svg id="tree-svg"></svg>
+    </div>
+    
+    <!-- Legend -->
+    <div class="legend" id="legend">
+      <div class="legend-title">Categories</div>
+      <div class="legend-items" id="legend-items"></div>
+    </div>
+    
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+      <button id="zoom-in" class="zoom-btn" title="Zoom In">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35M11 8v6m-3-3h6"/>
+        </svg>
+      </button>
+      <button id="zoom-out" class="zoom-btn" title="Zoom Out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35M8 11h6"/>
+        </svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- Company Info Panel -->
+  <aside id="info-panel" class="info-panel">
+    <button id="close-panel" class="close-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    
+    <div class="panel-content">
+      <div class="company-header">
+        <h2 id="company-name" class="company-name">Company Name</h2>
+        <div class="ticker-badge" id="ticker-badge">
+          <span id="company-ticker">TICK</span>
+          <span class="exchange" id="company-exchange">NYSE</span>
+        </div>
+      </div>
+      
+      <div class="stock-data" id="stock-data">
+        <div class="stock-price-container">
+          <span class="stock-price" id="stock-price">$0.00</span>
+          <span class="stock-change positive" id="stock-change">+0.00 (0.00%)</span>
+        </div>
+        
+        <div class="stock-details">
+          <div class="stock-detail">
+            <span class="label">Market Cap</span>
+            <span class="value" id="market-cap">N/A</span>
+          </div>
+          <div class="stock-detail">
+            <span class="label">Volume</span>
+            <span class="value" id="volume">N/A</span>
+          </div>
+          <div class="stock-detail">
+            <span class="label">52W High</span>
+            <span class="value" id="high-52w">N/A</span>
+          </div>
+          <div class="stock-detail">
+            <span class="label">52W Low</span>
+            <span class="value" id="low-52w">N/A</span>
+          </div>
+        </div>
+        
+        <div class="data-status" id="data-status">
+          <span class="status-dot live"></span>
+          <span>Live Data</span>
+        </div>
+      </div>
+      
+      <div class="category-path" id="category-path">
+        <!-- Breadcrumb path will be inserted here -->
+      </div>
+      
+      <div class="panel-actions">
+        <a id="yahoo-link" href="#" target="_blank" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          View on Yahoo Finance
+        </a>
+        <a id="google-link" href="#" target="_blank" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          Search on Google
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Loading Indicator -->
+  <div id="loading" class="loading">
+    <div class="loading-spinner"></div>
+    <span>Loading market data...</span>
+  </div>
+
+  <!-- Tooltip -->
+  <div id="tooltip" class="tooltip"></div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="stock-api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
