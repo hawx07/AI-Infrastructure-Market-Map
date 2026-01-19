@@ -5,7 +5,7 @@ const stockCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // Yahoo Finance API proxy (using a CORS-friendly approach)
-async function fetchStockData(ticker, exchange) {
+export async function fetchStockData(ticker, exchange) {
     const cacheKey = `${ticker}-${exchange}`;
     const cached = stockCache.get(cacheKey);
 
@@ -18,20 +18,24 @@ async function fetchStockData(ticker, exchange) {
 
     try {
         // Using Yahoo Finance v8 API
-        const response = await fetch(
-            `https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}?interval=1d&range=5d`,
-            {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0'
-                }
-            }
-        );
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}?interval=1d&range=5d`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+
+        const response = await fetch(proxyUrl);
 
         if (!response.ok) {
-            throw new Error('Failed to fetch stock data');
+            throw new Error('Failed to fetch stock data via proxy');
         }
 
-        const data = await response.json();
+        const wrapper = await response.json();
+        // allorigins.win returns the actual response content in a 'contents' field
+        const data = JSON.parse(wrapper.contents);
+
+        // Check if Yahoo Finance API itself returned an error or no data
+        if (!data || !data.chart || !data.chart.result || data.chart.result.length === 0) {
+            throw new Error('No stock data found from Yahoo Finance');
+        }
+
         const result = parseYahooData(data, ticker, exchange);
 
         stockCache.set(cacheKey, {

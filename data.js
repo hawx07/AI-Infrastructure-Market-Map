@@ -1,7 +1,7 @@
 // AI Infrastructure Market Map - Data Model
 // Complete hierarchical data structure with company information
 
-const marketMapData = {
+export const marketMapData = {
     name: "AI Infrastructure Market Map",
     children: [
         {
@@ -384,7 +384,7 @@ const marketMapData = {
 };
 
 // Category color mapping for visual hierarchy
-const categoryColors = {
+export const categoryColors = {
     "Semiconductor manufacturing and packaging": "#8B5CF6",
     "Compute and servers": "#06B6D4",
     "Memory and storage": "#10B981",
@@ -395,7 +395,4 @@ const categoryColors = {
     "Software tooling for chips and operations": "#84CC16"
 };
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { marketMapData, categoryColors };
-}
+
